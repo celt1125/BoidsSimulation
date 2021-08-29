@@ -1,0 +1,35 @@
+#pragma kernel CSMain
+static const int THREAD_GROUP_SIZE = 1024;
+
+struct BoidData {
+	float3 position;
+	float3 direction;
+
+	float3 align_direction;
+	float3 cohesion_position;
+	float3 separate_direction;
+	int detected_mates_num;
+};
+
+RWStructuredBuffer<BoidData> boids;
+int boid_size;
+float perception_radius;
+float separation_radius;
+
+[numthreads(THREAD_GROUP_SIZE,1,1)]
+void CSMain(uint id: SV_DispatchThreadID){
+	for (int index = 0; index < boid_size; index++){
+		if (id != index && id < boid_size){
+			float3 offset = boids[index].position - boids[id.x].position;
+			float magnitude = sqrt(dot(offset, offset));
+			
+			if (magnitude < perception_radius){
+				boids[id.x].align_direction += boids[index].direction;
+				boids[id.x].cohesion_position += boids[index].position;
+				boids[id.x].detected_mates_num++;
+			}
+			if (magnitude < separation_radius)
+				boids[id.x].separate_direction -= offset / magnitude;
+		}
+	}
+}
