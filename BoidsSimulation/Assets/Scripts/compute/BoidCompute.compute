@@ -12,13 +12,13 @@ struct BoidData {
 };
 
 RWStructuredBuffer<BoidData> boids;
-int boid_size;
+uint boid_size;
 float perception_radius;
 float separation_radius;
 
 [numthreads(THREAD_GROUP_SIZE,1,1)]
 void CSMain(uint id: SV_DispatchThreadID){
-	for (int index = 0; index < boid_size; index++){
+	for (uint index = 0; index < boid_size; index++){
 		if (id != index && id < boid_size){
 			float3 offset = boids[index].position - boids[id.x].position;
 			float magnitude = sqrt(dot(offset, offset));
